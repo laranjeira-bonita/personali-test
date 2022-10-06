@@ -3,6 +3,9 @@ var webpack = require('webpack')
 
 module.exports = {
   entry: './src/main.js',
+  devServer: {
+    proxy: 'https://localhost:3000/',
+},
   output: {
     path: path.resolve(__dirname, './dist'),
     publicPath: '/dist/',

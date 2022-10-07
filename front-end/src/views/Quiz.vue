@@ -1,9 +1,9 @@
 <template>
-  <div id="quiz" style="display: flex; flex-direction: column; align-content: flex-start; justify-content: flex-start">
+  <div id="quiz">
     <div v-for="question in questions" :key="question.index">
-      <div class="card" style="background-color: white; width: 100%; height: 100%; margin-bottom: 20px">
-        <div class="card-body" style="width: 700px">
-          <h2 class="card-title">{{question.index}}. {{question.name}}</h2>
+      <div class="card" style="background-color: white; width: 100%; height: 100%; margin-bottom: 40px">
+        <div class="card-body" style="width: 760px; height: 100px; display: flex; flex-direction: column; align-items: flex-start; padding: 20px">
+          <h2 class="card-title">{{question.name}}</h2>
             <div
               v-for="(res) in question.responses"
               :key="res.id"
@@ -27,9 +27,11 @@
         </div>
       </div>
     </div>
-
-            <a href="#" class="btn btn-primary">Go somewhere</a>
-
+    <div class="row">
+      <button v-if="currentPage > 1" class="big-btn-sm" @click="currentPage -= 1"><div><<<</div></button>
+      <button v-if="currentPage!==4" class="big-btn-sm" @click="nextPage()"><div>>>></div></button>
+      <button v-if="currentPage===4" class="big-btn-sm" @click="goToCadastro()"><div>submit</div></button>
+    </div>
   </div>
 </template>
 
@@ -42,8 +44,18 @@ const questionService = new QuestionService();
 export default {
   name: 'Quiz',
   methods: {
-    goToQuiz(){
-      this.$router.push('/category')
+    goToCadastro() {
+      const invalidLocation = this.invalidLocation()
+      if (!!invalidLocation) {
+        window.scrollTo({ top: invalidLocation*155, left: 0, behavior: 'smooth' });
+      } else {
+        this.$router.push({
+        path: '/cadastro',
+        query: {
+          chosenResponses: this.chosenResponses
+        }
+      })
+      }
     },
     getQuestions() {
       questionService.getQuestions({
@@ -51,6 +63,52 @@ export default {
       }).then((response) => {
         this.questions = response.data
       });
+    },
+    nextPage() {
+      const invalidLocation = this.invalidLocation()
+      if (!!invalidLocation) {
+        window.scrollTo({ top: invalidLocation*155, left: 0, behavior: 'smooth' });
+      } else {
+        this.currentPage += 1
+        window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+      }
+    },
+    createResponse() {
+        orderService.sendResponse(this.chosenResponses)
+    },
+    invalidLocation() {
+      const invalidRes = this.questions.find((q) => !this.chosenResponses.includes(q.responses[0].id) && !this.chosenResponses.includes(q.responses[1].id))
+      if (!!invalidRes) {
+        return invalidRes.index%10 === 0 ? 9 : invalidRes.index%10-1
+      } else {
+        return null
+      }
+    }
+  },
+  watch: {
+    currentPage: {
+      deep: true,
+      handler() {
+        this.getQuestions()
+      },
+    },
+    chosenResponses: {
+      deep: true,
+      handler() {
+        const invalidLocation = this.invalidLocation()
+        if (!!invalidLocation) {
+          window.scrollTo({ top: invalidLocation*155, left: 0, behavior: 'smooth' });
+        }
+      },
+    }
+
+  },
+  computed: {
+    missingResponse() {
+      const invalidLocation = this.invalidLocation()
+      if (!!invalidLocation) {
+        return window.scrollTo({ top: invalidLocation*155, left: 0, behavior: 'smooth' });
+      }
     }
   },
   data () {
@@ -58,13 +116,16 @@ export default {
       windowWidth: ref(window.innerWidth),
       windowHeight: ref(window.innerHeight),
       currentPage: 1,
+      perPage: 10,
+      totalRows: 100,
       questions: [],
-      chosenResponses: []
+      chosenResponses: [],
+      missingRes: null
     }
   },
   beforeMount () {
     this.getQuestions()
-  },
+  }
   }
 
 </script>
@@ -80,7 +141,7 @@ export default {
   justify-items: flex-start;
   align-items: center;
   align-content: flex-start;
-  margin-top: 60px;
+  margin-top: 20px;
   font-family: 'Kumbh Sans', sans-serif;
 }
 
@@ -150,5 +211,9 @@ p {
   line-height: 38px;
   font-weight: 600;
   letter-spacing: 0.2em;
+}
+
+.card {
+  border-radius: 12px;
 }
 </style>

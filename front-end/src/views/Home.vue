@@ -2,7 +2,7 @@
     <div id="home">
     <div v-if="windowWidth <= 600">
       <div class="container justify-between">
-                  <h2 style="margin-bottom: 30px" class="small-title">Utilize nossa ferramenta para se autoconhecer melhor</h2>
+        <h2 style="margin-bottom: 30px" class="small-title">Utilize nossa ferramenta para se autoconhecer melhor</h2>
 
         <div class="row">
           <img height="250px" width="250px" :src="girlImg" class="icon" style="margin-right:100px" />
